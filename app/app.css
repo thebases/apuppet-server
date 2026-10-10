@@ -21,7 +21,9 @@ span.link:hover { text-decoration: none; }
   bottom: 0;
   background-color: rgba(0, 0, 0, 0);
   z-index: 100500;
+  touch-action: none;
 }
+
 
 /* Full-area loading overlay (spinner + caption) and the bouncing dots shown over the video. */
 .loader {

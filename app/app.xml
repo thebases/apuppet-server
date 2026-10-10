@@ -8,9 +8,13 @@
 
       <AlertDialog open="state.dialog.open" onOpenChange="(open) => this.onDialogOpenChange(open)">
         <AlertDialogContent>
-          <AlertDialogDescription><t t-esc="state.dialog.message"/></AlertDialogDescription>
+          <AlertDialogDescription>
+            <t t-esc="state.dialog.message"/>
+          </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogAction onClick="() => ui.closeDialog()"><t t-esc="state.dialog.okLabel"/></AlertDialogAction>
+            <AlertDialogAction onClick="() => ui.closeDialog()">
+              <t t-esc="state.dialog.okLabel"/>
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -19,18 +23,19 @@
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Janus server</AlertDialogTitle>
-            <AlertDialogDescription><t t-esc="state.janusDialog.message"/></AlertDialogDescription>
+            <AlertDialogDescription>
+              <t t-esc="state.janusDialog.message"/>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <div class="mb-3">
             <Label for="'janus-servers'">Server address(es), comma separated</Label>
-            <Input id="'janus-servers'" placeholder="'https://host:8089/janus'" value="state.janusDialog.servers"
-                   onInput="(value) => state.janusDialog.servers = value"/>
-            <div class="form-text">Default: <t t-esc="state.janusDialog.defaults"/></div>
+            <Input id="'janus-servers'" placeholder="'https://host:8089/janus'" value="state.janusDialog.servers" onInput="(value) => state.janusDialog.servers = value"/>
+            <div class="form-text">Default: <t t-esc="state.janusDialog.defaults"/>
+            </div>
           </div>
           <div class="mb-3">
             <Label for="'janus-secret'">API secret</Label>
-            <Input id="'janus-secret'" type="'password'" autocomplete="'off'" value="state.janusDialog.apiSecret"
-                   onInput="(value) => state.janusDialog.apiSecret = value"/>
+            <Input id="'janus-secret'" type="'password'" autocomplete="'off'" value="state.janusDialog.apiSecret" onInput="(value) => state.janusDialog.apiSecret = value"/>
           </div>
           <AlertDialogFooter>
             <Button variant="'ghost'" onClick="() => ui.closeJanusDialog()">Cancel</Button>
@@ -70,13 +75,11 @@
           <div class="col-md-6">
             <div class="mb-3">
               <Label for="'input-session-id'">Session ID</Label>
-              <Input id="'input-session-id'" className="'input-start'" placeholder="'e.g., session ID shown in the app'"
-                     value="state.sessionId" onInput="(value, ev) => this.onLimitedInput('sessionId', 32, value, ev)"/>
+              <Input id="'input-session-id'" className="'input-start'" placeholder="'e.g., session ID shown in the app'" value="state.sessionId" onInput="(value, ev) => this.onLimitedInput('sessionId', 32, value, ev)"/>
             </div>
             <div class="mb-3">
               <Label for="'input-pin'">Password</Label>
-              <Input id="'input-pin'" className="'input-start'" placeholder="'e.g., password shown in the app'"
-                     value="state.pin" onInput="(value, ev) => this.onLimitedInput('pin', 16, value, ev)"/>
+              <Input id="'input-pin'" className="'input-start'" placeholder="'e.g., password shown in the app'" value="state.pin" onInput="(value, ev) => this.onLimitedInput('pin', 16, value, ev)"/>
             </div>
           </div>
         </div>
@@ -92,32 +95,32 @@
   <t t-name="app.Device">
     <div class="container" id="main-window" t-att-class="{'d-none': state.view !== 'main'}">
       <div class="row justify-content-center">
-        <div class="col-md-4 text-center">
-          <h2 id="textDeviceName" t-esc="state.deviceName"/>
+        <span id="textDeviceName" t-esc="state.deviceName"/>
+      </div>
+      <div class="row justify-content-center">
+        <div class="d-flex align-items justify-content-center gap-2 col-md-4 text-center">
+          
+          <span class="link" id="btnNotifications" t-on-click="() => this.sendCommand('notifications')">Status Bar</span>
+          <span class="link" id="btnDisconnect" t-on-click="disconnect">Disconnect</span>
         </div>
       </div>
       <div class="row justify-content-center">
-        <div class="col-md-4 text-center">
-          <span class="link" id="btnNotifications" t-on-click="() => this.sendCommand('notifications')">Expand Status Bar</span>
+        <div class="col-md-auto justify-content-center text-center" id="navButton">
+          <img src="static/images/icon-back.png" class="active-icon" style="width: 24px;" alt="Back" id="btnBack" t-on-click="() => this.sendCommand('back')"/>
+          <img src="static/images/icon-home.png" class="mx-3 active-icon" style="width: 24px;" alt="Home" id="btnHome" t-on-click="() => this.sendCommand('home')"/>
+          <img src="static/images/icon-recents.png" class="active-icon" style="width: 24px;" alt="Recents" id="btnRecents" t-on-click="() => this.sendCommand('recents')"/>
         </div>
       </div>
       <div class="row justify-content-center">
         <div class="col-md-auto justify-content-center text-center p-0 position-relative" id="windowStream" t-att-style="`--ar: ${state.videoWidth} / ${state.videoHeight}`">
           <div id="videoLoader" class="loader loader-bouncing" t-att-class="{'is-active': state.videoLoader.active}"/>
-          <div id="deviceGestures" t-on-mousedown.prevent="onGestureDown" t-on-mouseup.prevent="onGestureUp" t-on-mouseleave.prevent="onGestureUp"/>
-          <video class="rounded centered border" id="streamingRemoteVideo" t-ref="video" autoplay="" playsinline=""
-                 t-att-width="state.videoWidth" t-att-height="state.videoHeight" t-on-playing="onPlaying"/>
+          <div id="deviceGestures" t-on-pointerdown.prevent="onGestureDown" t-on-pointerup.prevent="onGestureUp" t-on-pointercancel.prevent="onGestureUp" t-on-pointermove="onGestureMove"/>
+          <video class="rounded centered border" id="streamingRemoteVideo" t-ref="video" autoplay="" playsinline="" t-att-width="state.videoWidth" t-att-height="state.videoHeight" t-on-playing="onPlaying"/>
         </div>
       </div>
-      <div class="row justify-content-center">
-        <div class="col-md-auto justify-content-center text-center">
-          <img src="static/images/icon-back.png" class="m-3 active-icon" style="width: 30px;" alt="Back" id="btnBack" t-on-click="() => this.sendCommand('back')"/>
-          <img src="static/images/icon-home.png" class="m-3 active-icon" style="width: 30px;" alt="Home" id="btnHome" t-on-click="() => this.sendCommand('home')"/>
-          <img src="static/images/icon-recents.png" class="m-3 active-icon" style="width: 30px;" alt="Recents" id="btnRecents" t-on-click="() => this.sendCommand('recents')"/>
-        </div>
-      </div>
+
       <div class="d-flex justify-content-center">
-        <span class="link" id="btnDisconnect" t-on-click="disconnect">Disconnect</span>
+
       </div>
     </div>
   </t>
@@ -140,14 +143,17 @@
             </CardHeader>
             <div class="card-body relative" t-att-style="'overflow-x: auto;' + (state.chatSized ? ' height: 250px;' : '')" t-ref="chat">
               <p t-foreach="state.messages" t-as="message" t-key="message_index" t-att-style="message.color ? 'color: ' + message.color : ''">
-                [<t t-esc="message.time"/>] <b t-if="message.lead" t-esc="message.lead"/> <i t-if="message.italic" t-esc="message.text"/><b t-elif="message.bold" t-esc="message.text"/><t t-else="" t-esc="message.text"/>
+                [                <t t-esc="message.time"/>
+]                <b t-if="message.lead" t-esc="message.lead"/>
+                <i t-if="message.italic" t-esc="message.text"/>
+                <b t-elif="message.bold" t-esc="message.text"/>
+                <t t-else="" t-esc="message.text"/>
               </p>
             </div>
             <CardFooter>
               <form id="chat-form" t-on-submit.prevent="onChatSubmit">
                 <div class="d-flex gap-1">
-                  <Input className="'flex-grow-1'" placeholder="'Message'" autocomplete="'off'" disabled="!state.chatEnabled"
-                         value="state.chatInput" onInput="(value) => state.chatInput = value"/>
+                  <Input className="'flex-grow-1'" placeholder="'Message'" autocomplete="'off'" disabled="!state.chatEnabled" value="state.chatInput" onInput="(value) => state.chatInput = value"/>
                   <Button type="'submit'" disabled="!state.chatEnabled">Send</Button>
                 </div>
               </form>

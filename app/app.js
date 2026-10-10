@@ -104,14 +104,19 @@ class Root extends Component {
     this.session.video.onPlaying();
   }
 
-  // Mouse pressed on the video overlay.
+  // Finger or mouse pressed on the video overlay.
   onGestureDown(ev) {
     this.session.gestures.onDown(ev);
   }
 
-  // Mouse released or left the video overlay.
+  // Finger or mouse released (or the touch was cancelled) on the video overlay.
   onGestureUp(ev) {
     this.session.gestures.onUp(ev);
+  }
+
+  // Finger or mouse moved over the video overlay (two fingers scroll the page).
+  onGestureMove(ev) {
+    this.session.gestures.onMove(ev);
   }
 
   // Closes the debug panel.
