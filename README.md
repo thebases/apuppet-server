@@ -13,7 +13,7 @@ The software consists of:
 - `app-server.py`. Small Python static server for `app/` that also proxies `/janus` to nginx
 - `deploy.sh`. Packages `dist/` and deploys it to the production host
 
-This project is the server module. The source code of the mobile agent is available at https://github.com/h-mdm/apuppet-android and also on [Google Play](https://play.google.com/store/apps/details?id=com.hmdm.control).
+This project is the server module. The source code of the mobile agent is available at https://github.com/thebases/apuppet-android .
 
 ### Repository status
 
@@ -41,18 +41,9 @@ Minimal software requirements:
 
 Other requirements:
 
-- CPU architecture `x84_64` / `amd64`
-- Ubuntu Linux, available options are:
-    - Ubuntu Focal `20.04 LTS`
-	- Ubuntu Bionic `18.04 LTS` 
-	- Ubuntu Xenial `16.04 LTS`
+- CPU architecture `x86_64` / `amd64`
+- Ubuntu Linux (the `janus` 1.1.2 apt package is required)
 - `bash` command interpreter
-
-The software has been tested on the DigitalOcean hosting (minimal $5 Droplet). The following Ubuntu versions have been tested:
-
-- Ubuntu Focal 20.04 LTS x64
-- Ubuntu Bionic 18.04.3 LTS x64
-- Ubuntu Xenial 16.04.6 LTS x64
 
 The web application for remote control (web-admin) has been tested and found to be fully functional in the following browsers:
 - Chrome 86+
@@ -84,11 +75,10 @@ The package keeps its configuration in `/etc/janus` (not the Makefile default `/
 
 #### Get the source code
 
-Clone this repository (upstream: https://github.com/h-mdm/apuppet-server) to the server:
+Clone this repository (upstream: https://github.com/thebases/apuppet-server) to the server:
 
-    git clone https://github.com/h-mdm/apuppet-server.git
+    git clone https://github.com/thebases/apuppet-server -b base
 
-Notice: to get the source code of the premium version, contact the sales at https://apuppet.org.
 
 #### Installation
 
@@ -149,9 +139,7 @@ Notes:
 
 ## Usage
 
-To control the mobile device remotely, you need to install the  [aPuppet](https://play.google.com/store/apps/details?id=com.hmdm.control) application available on Google Play.
-
-Notice: you can also get the mobile app source code at [github](https://github.com/h-mdm/apuppet-android) and build your own version.
+To control the mobile device remotely, you need to install the aPuppet Android application (source: https://github.com/thebases/apuppet-android).
 
 At first start, grant the required permissions.
 
@@ -165,7 +153,7 @@ At first start, grant the required permissions.
 ![Permission 2](./docs/images/perm2-apuppet.jpg)
 ![Permission 2](./docs/images/perm2-settings.jpg)
 
-The app on Google play points to the public aPuppet server (srv.apuppet.org) by default. You can change the server URL and secret in the app settings:
+You can change the server URL and secret in the app settings:
 
 ![Settings Screen](./docs/images/settings.jpg)
 
@@ -179,14 +167,6 @@ Enter these credentials in the `web-admin` application or just open the link pro
 
 ![Sharing - request permission](./docs/images/sharing-request-permission.jpg)
 ![Sharing](./docs/images/sharing.jpg)
-
-## Custom SSL certificate
-
-To setup the HTTPS connection, aPuppet uses free certificates provided by LetsEncrypt. These certificates are supported by most OS and browsers.
-
-Note that LetsEncrypt certifies only the domain name ownership and authenticity. It doesn't certify the data about your company. This fact may make LetsEncrypt not appropriate for work with sensitive data, for example in financial or medical areas.
-
-In the Premium version, you can use any HTTPS certificate. Please fill in the contact form at https://apuppet.org for details and how to purchase a premium license.
 
 ## Updates
 
