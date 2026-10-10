@@ -8,10 +8,26 @@ The software consists of:
 
 - [Janus](https://janus.conf.meetecho.com/). Media server for screen sharing and gesture delivery
 - [nginx](https://nginx.org/). Web server for hosting the web application
-- [certbot](https://certbot.eff.org/). Agent managing SSL certificates issued by [LetsEncrypt](https://letsencrypt.org/)
-- web-admin. Web application for the remote control of mobile devices
+- web-admin. Web application for the remote control of mobile devices (gulp build)
+- app. BaseUI (Owl) web app served from `app/`, with web-admin mounted on `/admin/`
+- `app-server.py`. Small Python static server for `app/` that also proxies `/janus` to nginx
+- `deploy.sh`. Packages `dist/` and deploys it to the production host
 
 This project is the server module. The source code of the mobile agent is available at https://github.com/h-mdm/apuppet-android and also on [Google Play](https://play.google.com/store/apps/details?id=com.hmdm.control).
+
+### Repository status
+
+The Ansible/Docker deploy stack has been removed; installation is driven by the `Makefile` on top of a native Janus install.
+
+| Component | Path | Status |
+| --- | --- | --- |
+| Makefile install/serve tooling | `Makefile` | Active (targets listed below) |
+| web-admin | `web-admin/` | Active, built to `dist/web-admin` |
+| BaseUI app | `app/` | Active, built to `dist/app`, served by `app-server.py` |
+| Release deploy | `deploy.sh` | Active, ships `dist/` to `base_150:/opt/services/sites/webrtc.thebase.vn/current` |
+| nginx site template | `nginx/janus-server.conf` | **Missing from the repo**: `make nginx-install` fails until it is restored |
+| `REVIEW-JANUS-NATIVE.md` | - | Referenced by the Makefile but not present in the repo |
+| certbot / Docker / Ansible | - | Removed; HTTPS is handled outside this repo |
 
 ### Platform requirements
 
@@ -60,7 +76,7 @@ Install git in case it's not installed yet:
 
 #### Get the source code
 
-Download the source code to the server via `git` from the repository https://github.com/h-mdm/apuppet-server.
+Clone this repository (upstream: https://github.com/h-mdm/apuppet-server) to the server:
 
     git clone https://github.com/h-mdm/apuppet-server.git
 
@@ -87,7 +103,19 @@ Targets:
 | `make uninstall-config` | Restores the original Janus configs (`*.apuppet.orig`) and restarts Janus |
 | `make clean` | Removes `dist/web-admin`, `dist/app`, `web-admin/dist` and `web-admin/node_modules` |
 
-Other targets (`check`, `janus-config`, `janus-restart`, `web-deps`, `web-settings`, `app-build`, `app-admin`) are the steps used by the targets above and can be run individually.
+Step targets used by the targets above, which can also be run individually:
+
+| Target | Description |
+| --- | --- |
+| `make check` | Verifies the Janus config dir, `openssl` and `curl`; generates `dist/.api_secret` on first use |
+| `make janus-config` | Backs up `janus.jcfg`, `janus.plugin.streaming.jcfg`, `janus.plugin.textroom.jcfg` as `*.apuppet.orig`, then writes `api_secret` (and optional `admin_secret`) and the streaming/textroom settings |
+| `make janus-restart` | Restarts the Janus service and waits up to 10 s for `/janus/info` |
+| `make web-deps` | Installs node/npm if missing, installs gulp, builds web-admin and copies it to `dist/web-admin` |
+| `make web-settings` | Writes `dist/web-admin/dist/js/settings.js` |
+| `make app-build` | Copies `app/` to `dist/app` and writes its `settings.js` |
+| `make app-admin` | Builds web-admin (and its settings) only if `dist/web-admin` is missing |
+
+`deploy.sh` is separate from the Makefile: it tars `dist/`, uploads it with `scp`, and replaces the `current` release on the remote host over `ssh`.
 
 Overrides are passed as `make VAR=value ...`:
 
@@ -109,7 +137,7 @@ Notes:
 - `RTP_PORT_RANGE` is fixed to `20000-40000`; open this UDP range in the firewall.
 - Original Janus configs are backed up once as `*.apuppet.orig` before being modified.
 - CORS is added by nginx, so Janus' own `cors` setting is left untouched.
-- See `REVIEW-JANUS-NATIVE.md` for background.
+- `REVIEW-JANUS-NATIVE.md` is referenced by the Makefile for background but is not in the repo.
 
 ## Usage
 
