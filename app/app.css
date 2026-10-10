@@ -1,0 +1,152 @@
+/* App-specific styles layered on top of baseui.min.css. */
+.debug-mode div { border: 1px solid #dee2e6 !important; }
+input.form-control::placeholder { color: #aaa; }
+.rounded { border-radius: 5px; }
+.centered { display: block; margin: auto; }
+.relative { position: relative; }
+.title-start { margin-top: 50px; margin-bottom: 50px; }
+.btn-start.bu-button { font-size: 30px; line-height: 1.5; margin-top: 25px; width: 200px; height: auto; padding: 0.375rem 0.75rem 12px; }
+.input-start { font-size: 24px; }
+span.link { cursor: pointer; color: blue; text-decoration: underline; }
+span.link:hover { text-decoration: none; }
+.active-icon:hover { cursor: pointer; }
+.active-icon:active { transform: scale(0.95); }
+#deviceGestures {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0);
+  z-index: 100500;
+}
+
+/* Full-area loading overlay (spinner + caption) and the bouncing dots shown over the video. */
+.loader {
+    color: #fff;
+    position: absolute;
+    box-sizing: border-box;
+    left: -9999px;
+    top: -9999px;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    z-index: 1049;
+}
+
+.loader:after, .loader:before {
+    box-sizing: border-box;
+    display: none
+}
+
+.loader.is-active {
+    background-color: rgba(0, 0, 0, .70);
+    backdrop-filter: blur(1px) grayscale(100%);
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0
+}
+
+.loader.is-active:after, .loader.is-active:before {
+    display: block
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0)
+    }
+    to {
+        transform: rotate(359deg)
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: .5
+    }
+    to {
+        opacity: 1
+    }
+}
+
+.loader[data-text]:before {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    font-family: Helvetica, Arial, sans-serif;
+    text-align: center;
+    width: 100%;
+    font-size: 16px
+}
+
+.loader[data-text=""]:before {
+    content: "Loading"
+}
+
+.loader[data-text]:not([data-text=""]):before {
+    content: attr(data-text)
+}
+
+.loader[data-text][data-blink]:before {
+    animation: blink 1s linear infinite alternate
+}
+
+.loader-default[data-text]:before {
+    top: calc(50% - 63px)
+}
+
+.loader-default:after {
+    content: "";
+    position: fixed;
+    width: 48px;
+    height: 48px;
+    border: 8px solid #fff;
+    border-left-color: transparent;
+    border-radius: 50%;
+    top: calc(50% - 24px);
+    left: calc(50% - 24px);
+    animation: rotation 1s linear infinite
+}
+
+.loader-default[data-half]:after {
+    border-right-color: transparent
+}
+
+.loader-default[data-inverse]:after {
+    animation-direction: reverse
+}
+
+.loader-bouncing:after, .loader-bouncing:before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: calc(50% + 5px);
+    left: calc(50% + 5px);
+    border-radius: 50%;
+    background-color: #fff;
+    animation: kick .6s infinite alternate
+}
+
+.loader-bouncing:after {
+    margin-left: -30px;
+    animation: kick .6s infinite alternate
+}
+
+.loader-bouncing:before {
+    animation-delay: .2s
+}
+
+@keyframes kick {
+    0% {
+        opacity: 1;
+        transform: translateY(0)
+    }
+    to {
+        opacity: .3;
+        transform: translateY(-1rem)
+    }
+}

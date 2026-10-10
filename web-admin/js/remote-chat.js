@@ -91,7 +91,7 @@ function RemoteChat(chatElem, chatForm, messageInput, sendButton) {
     };
 
     this.startRoom = function (sessionId, pin) {
-        this.sessionId = sessionId;
+        this.sessionId = parseInt(sessionId, 10);
         this.pin = pin;
 
         this.userId = `admin:${sessionId}`;
@@ -264,7 +264,7 @@ function RemoteChat(chatElem, chatForm, messageInput, sendButton) {
     };
 
     this.processRoomDestroy = function (roomId){
-        if (roomId !== this.sessionId) {
+        if (parseInt(roomId, 10) !== this.sessionId) {
             return;
         }
         console.debug('chat: current room has been destroyed', roomId);

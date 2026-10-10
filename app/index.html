@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" b-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>aPuppet Web Administrator</title>
+    <meta name="description" content="Open source web application to access Android devices remotely (remote support program)" />
+    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@thebase/ui@1.1.2/dist/baseui.min.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@base/owl": "https://cdn.jsdelivr.net/npm/@thebase/ui@1.1.2/dist/baseui.esm.js",
+          "@base/component": "https://cdn.jsdelivr.net/npm/@thebase/ui@1.1.2/dist/baseui.esm.js",
+          "@base/theme": "https://cdn.jsdelivr.net/npm/@thebase/ui@1.1.2/dist/baseui.esm.js",
+          "@base/templates": "https://cdn.jsdelivr.net/npm/@thebase/ui@1.1.2/dist/baseui.templates.xml"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body class="bg-body text-body">
+    <div id="app"></div>
+    <noscript>This app needs JavaScript enabled to run.</noscript>
+
+    <!-- Janus client and WebRTC adapter are classic scripts that define globals; settings.js (written by the deploy) comes after them. -->
+    <script src="js/lib/adapter-6.4.0.min.js"></script>
+    <script src="js/lib/janus.js"></script>
+    <!-- Deployed settings.js still configures toastr (now replaced by BaseUI toasts); this stub keeps it from failing. -->
+    <script>
+      window.toastr = { options: {} };
+    </script>
+    <script src="settings.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

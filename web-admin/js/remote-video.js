@@ -58,6 +58,7 @@ function RemoteVideo(remoteVideoElem, videoLoader, videoStats) {
     }
 
     this.startStreamMountpoint = function (mountpointId, pin) {
+        mountpointId = parseInt(mountpointId, 10);
         this.mountpointId = mountpointId;
         console.info("streaming: starting mountpoint id " + mountpointId + ' with pin ' + pin);
 

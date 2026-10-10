@@ -8,6 +8,7 @@
 #   make install          patch Janus configs, restart Janus, build web-admin, write settings.js
 #   make nginx-install    publish web-admin to nginx (http://<ip>:8080/) and reload nginx
 #   make serve            alternative: serve the web UI on http://<ip>:8075/ (LAN)
+#   make app              serve dist/app on http://<ip>:8075/ and dist/web-admin on /admin/ (WEB_PORT)
 #   make status           show the effective setup
 #
 # Overrides (make VAR=value ...):
@@ -22,7 +23,7 @@
 JANUS_ETC       ?= /opt/janus/etc/janus
 JANUS_SERVICE   ?= janus
 JANUS_HTTP_PORT ?= 8088
-RTP_PORT_RANGE  ?= 10000-10500
+override RTP_PORT_RANGE := 20000-40000
 NGINX_PORT      ?= 8080
 NGINX_SITE      ?= janus-server
 WEB_ROOT        ?= /var/www/apuppet-web-admin
@@ -34,6 +35,7 @@ SUDO            ?= $(shell [ $$(id -u) -eq 0 ] || echo sudo)
 
 DIST      := dist
 WEB_OUT   := $(DIST)/web-admin
+APP_OUT   := $(DIST)/app
 SECRET_F  := $(DIST)/.api_secret
 BACKUP_EXT := apuppet.orig
 API_SECRET := $(shell [ -s $(SECRET_F) ] && cat $(SECRET_F) || openssl rand -hex 8)
@@ -59,12 +61,22 @@ var textroomOpaqueId = "textroom-" + opaqueId;
 var apiSecret = "$(API_SECRET)";
 var janusDebugLevel = ['warn', 'error'];
 toastr.options = { "progressBar": true, "positionClass": "toast-top-right", "preventDuplicates": true, "timeOut": 5000 };
-var janusServers = [ $(if $(JANUS_URL),"$(JANUS_URL)",`http://$${window.location.hostname}:$(NGINX_PORT)/janus`) ];
+var janusServers = [ "$(or $(JANUS_URL),https://webrtc.thebase.vn/janus)" ];
 endef
 
-export STREAMING_CFG TEXTROOM_CFG SETTINGS_JS
+# settings.js for app/: Janus defaults to https://webrtc.thebase.vn/janus (override with JANUS_URL).
+define APP_SETTINGS_JS
+var opaqueId = Janus.randomString(12);
+var streamingOpaqueId = "streaming-" + opaqueId;
+var textroomOpaqueId = "textroom-" + opaqueId;
+var apiSecret = "$(API_SECRET)";
+var janusDebugLevel = ['warn', 'error'];
+var janusServers = [ "$(or $(JANUS_URL),https://webrtc.thebase.vn/janus)" ];
+endef
 
-.PHONY: nginx-install install check janus-config janus-restart web web-deps web-settings serve verify status uninstall-config clean
+export STREAMING_CFG TEXTROOM_CFG SETTINGS_JS APP_SETTINGS_JS
+
+.PHONY: nginx-install install check janus-config janus-restart web web-deps web-settings app app-build app-admin serve verify status uninstall-config clean
 
 install: check janus-config janus-restart web verify
 	@echo
@@ -132,6 +144,27 @@ web-settings: check
 	@printf '%s\n' "$$SETTINGS_JS" > $(WEB_OUT)/dist/js/settings.js
 	@echo "Wrote $(WEB_OUT)/dist/js/settings.js"
 
+# BaseUI app (app/): copy it to dist/app, write its settings.js, serve it on WEB_PORT (8075).
+# app-server.py also forwards /janus to nginx on NGINX_PORT (8080), so no CORS is needed.
+app-build: check
+	rm -rf $(APP_OUT)
+	mkdir -p $(APP_OUT)
+	cp -r app/. $(APP_OUT)/
+	rm -f $(APP_OUT)/settings.example.js
+	@printf '%s\n' "$$APP_SETTINGS_JS" > $(APP_OUT)/settings.js
+	@echo "Wrote $(APP_OUT)/settings.js"
+
+# web-admin is built on demand (make web) when dist/web-admin is missing.
+app-admin: check
+	@test -f $(WEB_OUT)/index.html || $(MAKE) web
+	@test -f $(WEB_OUT)/dist/js/settings.js || $(MAKE) web-settings
+
+# Serves everything in dist/: / -> dist/app, /admin/ -> dist/web-admin.
+app: app-build app-admin
+	@echo "app   : http://<this-host-ip>:$(WEB_PORT)/"
+	@echo "admin : http://<this-host-ip>:$(WEB_PORT)/admin/"
+	python3 app-server.py --port $(WEB_PORT) --bind $(WEB_BIND) --directory $(APP_OUT) --mount /admin=$(WEB_OUT) --upstream 127.0.0.1:$(NGINX_PORT)
+
 # Static server for web-admin on the local network. Port 8080 belongs to nginx (janus-server).
 serve:
 	@test -f $(WEB_OUT)/index.html || { echo "Run 'make web' first"; exit 1; }
@@ -166,4 +199,4 @@ uninstall-config:
 	$(SUDO) systemctl restart $(JANUS_SERVICE)
 
 clean:
-	rm -rf $(WEB_OUT) web-admin/dist web-admin/node_modules
+	rm -rf $(WEB_OUT) $(APP_OUT) web-admin/dist web-admin/node_modules

@@ -262,12 +262,17 @@ $(document).ready(function () {
 
     // Session login
     $('#login-form').on('submit', function (e) {
-        var sessionId = $('#input-session-id').val();
+        var rawSessionId = $.trim($('#input-session-id').val());
         var pin = $('#input-pin').val();
+        e.preventDefault();
+        if (!/^\d+$/.test(rawSessionId) || !Number.isSafeInteger(Number(rawSessionId))) {
+            ui.showError('Session ID must be an integer', 'no_session');
+            return;
+        }
+        var sessionId = parseInt(rawSessionId, 10);
         ui.connStart();
         remoteVideo.startStreamMountpoint(sessionId, pin);
         remoteChat.startRoom(sessionId, pin);
-        e.preventDefault();
     });
 
     // Back button

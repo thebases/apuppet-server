@@ -1,0 +1,161 @@
+<templates xml:space="preserve">
+  <t t-name="app.Root">
+    <div class="d-flex flex-column min-vh-100" t-att-class="{'debug-mode': state.debug}">
+      <div id="pageLoader" class="loader loader-default" t-att-class="{'is-active': state.pageLoader.active}" t-att-data-text="state.pageLoader.text"/>
+      <t t-call="app.Login"/>
+      <t t-call="app.Device"/>
+      <t t-call="app.Debug"/>
+
+      <AlertDialog open="state.dialog.open" onOpenChange="(open) => this.onDialogOpenChange(open)">
+        <AlertDialogContent>
+          <AlertDialogDescription><t t-esc="state.dialog.message"/></AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick="() => ui.closeDialog()"><t t-esc="state.dialog.okLabel"/></AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open="state.janusDialog.open">
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Janus server</AlertDialogTitle>
+            <AlertDialogDescription><t t-esc="state.janusDialog.message"/></AlertDialogDescription>
+          </AlertDialogHeader>
+          <div class="mb-3">
+            <Label for="'janus-servers'">Server address(es), comma separated</Label>
+            <Input id="'janus-servers'" placeholder="'https://host:8089/janus'" value="state.janusDialog.servers"
+                   onInput="(value) => state.janusDialog.servers = value"/>
+            <div class="form-text">Default: <t t-esc="state.janusDialog.defaults"/></div>
+          </div>
+          <div class="mb-3">
+            <Label for="'janus-secret'">API secret</Label>
+            <Input id="'janus-secret'" type="'password'" autocomplete="'off'" value="state.janusDialog.apiSecret"
+                   onInput="(value) => state.janusDialog.apiSecret = value"/>
+          </div>
+          <AlertDialogFooter>
+            <Button variant="'ghost'" onClick="() => ui.closeJanusDialog()">Cancel</Button>
+            <Button variant="'outline'" onClick="() => ui.resetJanusDialog()">Use default</Button>
+            <Button onClick="() => ui.saveJanusDialog()">Save &amp; reconnect</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div class="position-fixed top-0 end-0 p-3 d-flex flex-column gap-2" style="z-index: 1090; width: 24rem; max-width: 100vw;">
+        <Notice t-foreach="state.notices" t-as="notice" t-key="notice.id" notice="notice"/>
+      </div>
+    </div>
+  </t>
+
+  <t t-name="app.Notice">
+    <Toast open="state.open" delay="props.notice.timeout" className="'text-bg-' + props.notice.type" onOpenChange="(open) => this.onOpenChange(open)">
+      <div t-if="props.notice.title" class="fw-medium" t-esc="props.notice.title"/>
+      <div t-esc="props.notice.message"/>
+    </Toast>
+  </t>
+
+  <t t-name="app.Login">
+    <form id="login-form" t-on-submit.prevent="onLogin">
+      <div class="container" id="login-form-container" t-att-class="{'d-none': state.view !== 'login'}">
+        <div class="row justify-content-center">
+          <div class="col-md-6 text-center">
+            <h1 class="title-start">aPuppet - Ready to Control!</h1>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-6 text-center">
+            <p>Enter the credentials provided by the mobile device user</p>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <Label for="'input-session-id'">Session ID</Label>
+              <Input id="'input-session-id'" className="'input-start'" placeholder="'e.g., session ID shown in the app'"
+                     value="state.sessionId" onInput="(value, ev) => this.onLimitedInput('sessionId', 32, value, ev)"/>
+            </div>
+            <div class="mb-3">
+              <Label for="'input-pin'">Password</Label>
+              <Input id="'input-pin'" className="'input-start'" placeholder="'e.g., password shown in the app'"
+                     value="state.pin" onInput="(value, ev) => this.onLimitedInput('pin', 16, value, ev)"/>
+            </div>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-6 text-center">
+            <Button type="'submit'" className="'btn-start'">Start</Button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </t>
+
+  <t t-name="app.Device">
+    <div class="container" id="main-window" t-att-class="{'d-none': state.view !== 'main'}">
+      <div class="row justify-content-center">
+        <div class="col-md-4 text-center">
+          <h2 id="textDeviceName" t-esc="state.deviceName"/>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-md-4 text-center">
+          <span class="link" id="btnNotifications" t-on-click="() => this.sendCommand('notifications')">Expand Status Bar</span>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-md-auto justify-content-center text-center p-0 position-relative" id="windowStream" t-att-style="`--ar: ${state.videoWidth} / ${state.videoHeight}`">
+          <div id="videoLoader" class="loader loader-bouncing" t-att-class="{'is-active': state.videoLoader.active}"/>
+          <div id="deviceGestures" t-on-mousedown.prevent="onGestureDown" t-on-mouseup.prevent="onGestureUp" t-on-mouseleave.prevent="onGestureUp"/>
+          <video class="rounded centered border" id="streamingRemoteVideo" t-ref="video" autoplay="" playsinline=""
+                 t-att-width="state.videoWidth" t-att-height="state.videoHeight" t-on-playing="onPlaying"/>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-md-auto justify-content-center text-center">
+          <img src="static/images/icon-back.png" class="m-3 active-icon" style="width: 30px;" alt="Back" id="btnBack" t-on-click="() => this.sendCommand('back')"/>
+          <img src="static/images/icon-home.png" class="m-3 active-icon" style="width: 30px;" alt="Home" id="btnHome" t-on-click="() => this.sendCommand('home')"/>
+          <img src="static/images/icon-recents.png" class="m-3 active-icon" style="width: 30px;" alt="Recents" id="btnRecents" t-on-click="() => this.sendCommand('recents')"/>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center">
+        <span class="link" id="btnDisconnect" t-on-click="disconnect">Disconnect</span>
+      </div>
+    </div>
+  </t>
+
+  <t t-name="app.Debug">
+    <div class="container debug-stuff" t-att-class="{'d-none': !state.debug}">
+      <div class="row">
+        <div class="col-md-auto">
+          <Card>
+            <CardHeader>
+              <span class="card-title">
+                <Button variant="'secondary'" id="debugClose" onClick="() => this.closeDebug()">X</Button>
+                Debug utils
+                <Badge variant="'info'" className="'ms-1'" label="state.status"/>
+                <t t-if="state.statsVisible">
+                  <Badge variant="'primary'" className="'ms-1'" label="state.resolution"/>
+                  <Badge variant="'info'" className="'ms-1'" label="state.bitrate"/>
+                </t>
+              </span>
+            </CardHeader>
+            <div class="card-body relative" t-att-style="'overflow-x: auto;' + (state.chatSized ? ' height: 250px;' : '')" t-ref="chat">
+              <p t-foreach="state.messages" t-as="message" t-key="message_index" t-att-style="message.color ? 'color: ' + message.color : ''">
+                [<t t-esc="message.time"/>] <b t-if="message.lead" t-esc="message.lead"/> <i t-if="message.italic" t-esc="message.text"/><b t-elif="message.bold" t-esc="message.text"/><t t-else="" t-esc="message.text"/>
+              </p>
+            </div>
+            <CardFooter>
+              <form id="chat-form" t-on-submit.prevent="onChatSubmit">
+                <div class="d-flex gap-1">
+                  <Input className="'flex-grow-1'" placeholder="'Message'" autocomplete="'off'" disabled="!state.chatEnabled"
+                         value="state.chatInput" onInput="(value) => state.chatInput = value"/>
+                  <Button type="'submit'" disabled="!state.chatEnabled">Send</Button>
+                </div>
+              </form>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+    </div>
+  </t>
+
+</templates>
