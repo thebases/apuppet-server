@@ -176,3 +176,8 @@ ems-result-*
 web-admin/package-lock.json
 web-admin/package.json
 web-admin/dist
+
+
+.agents
+.claude
+CLAUDE.md

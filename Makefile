@@ -1,4 +1,4 @@
-# aPuppet server on top of an existing native Janus install (no Docker, no Ansible).
+# aPuppet server on top of an existing native Janus install.
 # Janus is fronted on the local network by the nginx site `janus-server` (plain HTTP):
 #   http://<ip>:8080/janus   ws://<ip>:8080/ws   http://localhost:8080/admin (local only)
 # `make nginx-install` publishes web-admin and makes nginx `location /` serve it on :8080.
