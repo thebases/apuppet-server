@@ -72,6 +72,14 @@ Install git in case it's not installed yet:
 
     sudo apt install -y git
 
+Install Janus from the Ubuntu repository (version `1.1.2`):
+
+    sudo apt install -y janus
+    janus --version        # expect 1.1.2
+    sudo systemctl enable --now janus
+
+The package keeps its configuration in `/etc/janus` (not the Makefile default `/opt/janus/etc/janus`), so pass `JANUS_ETC=/etc/janus` to every `make` command below, for example `make install JANUS_ETC=/etc/janus`. Confirm the path with `dpkg -L janus | grep janus.jcfg`.
+
 ### aPuppet setup
 
 #### Get the source code
@@ -84,7 +92,7 @@ Notice: to get the source code of the premium version, contact the sales at http
 
 #### Installation
 
-If Janus is already installed natively (default config dir `/opt/janus/etc/janus`) and fronted by the nginx site `janus-server` on port 8080, use the `Makefile`. Requirements: `make`, `openssl`, `curl`, `python3`, `nginx`, and `node`/`npm` (installed automatically if missing). `sudo` is used automatically when not running as root.
+Once Janus is installed natively (default config dir `/opt/janus/etc/janus`; `/etc/janus` for the apt package) and fronted by the nginx site `janus-server` on port 8080, use the `Makefile`. Requirements: `make`, `openssl`, `curl`, `python3`, `nginx`, and `node`/`npm` (installed automatically if missing). `sudo` is used automatically when not running as root.
 
     make install          # patch Janus configs, restart Janus, build web-admin, write settings.js
     make nginx-install    # publish web-admin to nginx: http://<ip>:8080/ (Janus API on /janus, WebSocket on /ws)
